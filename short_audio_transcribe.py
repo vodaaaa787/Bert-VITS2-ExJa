@@ -6,9 +6,9 @@ import argparse
 import torch
 
 lang2token = {
-            'zh': "[ZH]",
-            'ja': "[JA]",
-            "en": "[EN]",
+            'zh': "ZH|",
+            'ja': "JP|",
+            "en": "EN|",
         }
 def transcribe_one(audio_path):
     try:
