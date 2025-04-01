@@ -34,29 +34,29 @@ def transcribe_one(audio_path):
     except Exception as e:
         print(e)
 if __name__ == "__main__":
-     parser = argparse.ArgumentParser()
-     parser.add_argument("--languages", default="J")
-     parser.add_argument("--whisper_size", default="medium")
-     args = parser.parse_args()
-     if args.languages == "CJE":
-         lang2token = {
-             'zh': "ZH|",
-             'ja': "JP|",
-             "en": "EN|",
-         }
-     elif args.languages == "CJ":
-         lang2token = {
-             'zh': "ZH|",
-             'ja': "JP|",
-         }
-     elif args.languages == "C":
-         lang2token = {
-             'zh': "ZH|",
-         }
-     elif args.languages == "J":
-         lang2token = {
-             'ja': "JP|",
-         }
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--languages", default="J")
+    parser.add_argument("--whisper_size", default="medium")
+    args = parser.parse_args()
+    if args.languages == "CJE":
+        lang2token = {
+            'zh': "ZH|",
+            'ja': "JP|",
+            "en": "EN|",
+        }
+    elif args.languages == "CJ":
+        lang2token = {
+            'zh': "ZH|",
+            'ja': "JP|",
+        }
+    elif args.languages == "C":
+        lang2token = {
+            'zh': "ZH|",
+        }
+    elif args.languages == "J":
+        lang2token = {
+            'ja': "JP|",
+        }
     assert (torch.cuda.is_available()), "Please enable GPU in order to run Whisper!"
     model = whisper.load_model(args.whisper_size)
     parent_dir = config.resample_config.in_dir
