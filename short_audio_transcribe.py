@@ -53,7 +53,7 @@ if __name__ == "__main__":
          lang2token = {
              'zh': "ZH|",
          }
-     else args.languages == "J":
+     elif args.languages == "J":
          lang2token = {
              'ja': "JP|",
          }
