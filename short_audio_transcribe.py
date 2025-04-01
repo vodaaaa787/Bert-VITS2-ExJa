@@ -36,7 +36,6 @@ def transcribe_one(audio_path):
 if __name__ == "__main__":
      parser = argparse.ArgumentParser()
      parser.add_argument("--languages", default="J")
-     parser.add_argument("--languages", default="CJE")
      parser.add_argument("--whisper_size", default="medium")
      args = parser.parse_args()
      if args.languages == "CJE":
@@ -54,7 +53,7 @@ if __name__ == "__main__":
          lang2token = {
              'zh': "ZH|",
          }
-     else :
+     else args.languages == "J":
          lang2token = {
              'ja': "JP|",
          }
