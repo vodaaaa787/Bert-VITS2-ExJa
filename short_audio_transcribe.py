@@ -4,6 +4,7 @@ import json
 import torchaudio
 import argparse
 import torch
+from config import config
 
 lang2token = {
             'zh': "ZH|",
@@ -33,34 +34,40 @@ def transcribe_one(audio_path):
     except Exception as e:
         print(e)
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--languages", default="CJE")
-    parser.add_argument("--whisper_size", default="medium")
-    args = parser.parse_args()
-    if args.languages == "CJE":
-        lang2token = {
-            'zh': "[ZH]",
-            'ja': "[JA]",
-            "en": "[EN]",
-        }
-    elif args.languages == "CJ":
-        lang2token = {
-            'zh': "[ZH]",
-            'ja': "[JA]",
-        }
-    elif args.languages == "C":
-        lang2token = {
-            'zh': "[ZH]",
-        }
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--languages", default="J")
+     parser.add_argument("--languages", default="CJE")
+     parser.add_argument("--whisper_size", default="medium")
+     args = parser.parse_args()
+     if args.languages == "CJE":
+         lang2token = {
+             'zh': "ZH|",
+             'ja': "JP|",
+             "en": "EN|",
+         }
+     elif args.languages == "CJ":
+         lang2token = {
+             'zh': "ZH|",
+             'ja': "JP|",
+         }
+     elif args.languages == "C":
+         lang2token = {
+             'zh': "ZH|",
+         }
+     else :
+         lang2token = {
+             'ja': "JP|",
+         }
     assert (torch.cuda.is_available()), "Please enable GPU in order to run Whisper!"
     model = whisper.load_model(args.whisper_size)
-    parent_dir = "./custom_character_voice/"
+    parent_dir = config.resample_config.in_dir
+    parent_dir = parent_dir.replace("/audios","")
     speaker_names = list(os.walk(parent_dir))[0][1]
     speaker_annos = []
     total_files = sum([len(files) for r, d, files in os.walk(parent_dir)])
     # resample audios
     # 2023/4/21: Get the target sampling rate
-    with open("./configs/finetune_speaker.json", 'r', encoding='utf-8') as f:
+    with open(config.train_ms_config.config_path, 'r', encoding='utf-8') as f:
         hps = json.load(f)
     target_sr = hps['data']['sampling_rate']
     processed_files = 0
