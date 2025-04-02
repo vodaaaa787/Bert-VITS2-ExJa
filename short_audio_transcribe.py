@@ -60,6 +60,7 @@ if __name__ == "__main__":
     assert (torch.cuda.is_available()), "Please enable GPU in order to run Whisper!"
     model = whisper.load_model(args.whisper_size)
     parent_dir = config.resample_config.in_dir
+    wavs_dir = config.resample_config.out_dir
     speaker_names = list(os.walk(parent_dir))[0][1]
     speaker_annos = []
     total_files = sum([len(files) for r, d, files in os.walk(parent_dir)])
@@ -69,32 +70,47 @@ if __name__ == "__main__":
         hps = json.load(f)
     target_sr = hps['data']['sampling_rate']
     processed_files = 0
+    os.makedirs(wavs_dir, exist_ok=True)
+# 处理每个说话人
     for speaker in speaker_names:
-        for i, wavfile in enumerate(list(os.walk(parent_dir + speaker))[0][2]):
-            # try to load file as audio
+        input_dir = os.path.join(parent_dir, speaker)
+        output_dir = os.path.join(wavs_dir, speaker)
+        os.makedirs(output_dir, exist_ok=True)
+
+        for i, wavfile in enumerate(os.listdir(input_dir)):
             if wavfile.startswith("processed_"):
                 continue
+
             try:
-                wav, sr = torchaudio.load(parent_dir + speaker + "/" + wavfile, frame_offset=0, num_frames=-1, normalize=True,
-                                          channels_first=True)
+                # 加载音频
+                input_path = os.path.join(input_dir, wavfile)
+                wav, sr = torchaudio.load(input_path, normalize=True, channels_first=True)
+                
+                # 预处理（单声道/重采样/长度检查）
                 wav = wav.mean(dim=0).unsqueeze(0)
                 if sr != target_sr:
-                    wav = torchaudio.transforms.Resample(orig_freq=sr, new_freq=target_sr)(wav)
-                if wav.shape[1] / sr > 20:
-                    print(f"{wavfile} too long, ignoring\n")
-                save_path = parent_dir + speaker + "/" + f"processed_{i}.wav"
-                torchaudio.save(save_path, wav, target_sr, channels_first=True)
-                # transcribe text
-                lang, text = transcribe_one(save_path)
-                if lang not in list(lang2token.keys()):
-                    print(f"{lang} not supported, ignoring\n")
+                    wav = torchaudio.transforms.Resample(sr, target_sr)(wav)
+                if wav.shape[1] / target_sr > 20:
+                    print(f"{wavfile} too long, skipping")
                     continue
-                text = lang2token[lang] + text + "\n"
-                speaker_annos.append(save_path + "|" + speaker + "|" + text)
                 
+                # 保存处理后的音频
+                output_path = os.path.join(output_dir, f"processed_{i}.wav")
+                torchaudio.save(output_path, wav, target_sr)
+                
+                # 转录文本
+                lang, text = transcribe_one(output_path)
+                if lang not in lang2token:
+                    print(f"{lang} not supported, skipping")
+                    continue
+                    
+                # 保存标注
+                speaker_annos.append(f"{output_path}|{speaker}|{lang2token[lang]}{text}\n")
                 processed_files += 1
-                print(f"Processed: {processed_files}/{total_files}")
-            except:
+                print(f"Progress: {processed_files}/{total_files}")
+                
+            except Exception as e:
+                print(f"Error processing {wavfile}: {str(e)}")
                 continue
 
     # # clean annotation
