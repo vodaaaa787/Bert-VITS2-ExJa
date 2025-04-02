@@ -33,4 +33,5 @@ pykakasi
 langid
 onnxruntime-gpu
 opencc==1.1.6
+monotonic_align
 WeTextProcessing>=0.1.10; platform_system != "Windows"
