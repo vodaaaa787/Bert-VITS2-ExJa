@@ -22,9 +22,9 @@ PyYAML
 requests
 pyopenjtalk-prebuilt
 jaconv
-torch
-torchaudio
-torchvision
+psutil
+GPUtil
+vector_quantize_pytorch
 g2p_en
 sentencepiece
 pykakasi
