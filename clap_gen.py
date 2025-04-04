@@ -32,7 +32,7 @@ def process_line(line):
     if os.path.isfile(clap_path):
         return
 
-    audio = librosa.load(wav_path, 48000)[0]
+    audio = librosa.load(wav_path, 44100)[0]
     # audio = librosa.resample(audio, 44100, 48000)
 
     clap = get_clap_audio_feature(audio, device)
