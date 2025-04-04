@@ -21,3 +21,4 @@ transformers
 umap-learn
 monotonic_align
 WeTextProcessing>=0.1.10; platform_system != "Windows"
+vector_quantize_pytorch
