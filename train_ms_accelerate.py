@@ -15,7 +15,7 @@ import argparse
 import datetime
 
 # +++ Accelerate Imports +++
-from accelerate import Accelerator, notebook_launcher
+from accelerate import Accelerator
 from accelerate.utils import DistributedDataParallelKwargs, set_seed
 
 logging.getLogger("numba").setLevel(logging.WARNING)
