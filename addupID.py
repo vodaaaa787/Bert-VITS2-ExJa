@@ -2,32 +2,33 @@ import os
 import json
 import sys
 import argparse # 用于处理命令行参数
+from config import config
 
 def update_speaker_ids(folder_a_path, file_b_path):
     """
-    将文件夹A内所有第一层子文件的名称添加到指定JSON文件B的spk2id字典中，
+    将文件夹A内所有第一层子文件夹的名称添加到指定JSON文件B的spk2id字典中，
     并更新n_speakers计数。假设JSON文件B必须存在。
 
     Args:
-        folder_a_path (str): 文件夹A的路径。
-        file_b_path (str): 文件B (JSON文件) 的路径。
+        folder_a_path (str): 源文件夹A的路径 (包含子文件夹)。
+        file_b_path (str): 目标JSON文件B的路径。
     """
     print(f"--- 开始处理 ---")
-    print(f"源文件夹 (Folder A): {folder_a_path}")
-    print(f"目标JSON文件 (File B): {file_b_path}")
+    print(f"最终使用的源文件夹: {folder_a_path}")
+    print(f"最终使用的目标JSON文件: {file_b_path}")
 
-    # --- 1. 检查并获取文件夹A中的文件名 ---
+    # --- 1. 检查并获取文件夹A中的子文件夹名 ---
     if not os.path.isdir(folder_a_path):
         print(f"错误：找不到源文件夹 '{folder_a_path}'")
         sys.exit(1)
 
     try:
         all_items = os.listdir(folder_a_path)
-        # 过滤出第一层的文件
-        file_names = [f for f in all_items if os.path.isfile(os.path.join(folder_a_path, f))]
-        print(f"在源文件夹中找到 {len(file_names)} 个文件。")
-        if not file_names:
-            print("源文件夹中没有文件，无需更新。")
+        # 关键改动：过滤出第一层的子文件夹 (使用 os.path.isdir)
+        dir_names = [d for d in all_items if os.path.isdir(os.path.join(folder_a_path, d))]
+        print(f"在源文件夹中找到 {len(dir_names)} 个子文件夹。")
+        if not dir_names:
+            print("源文件夹中没有子文件夹，无需更新。")
             print("--- 处理结束 ---")
             return
 
@@ -79,12 +80,9 @@ def update_speaker_ids(folder_a_path, file_b_path):
     next_id = current_max_id + 1
     added_count = 0
 
-    print("开始添加新的speaker ID...")
-    for filename in sorted(file_names):
-        # 使用完整文件名作为key
-        key_name = filename
-        # # 如果需要去除扩展名，取消下面这行的注释
-        # key_name, _ = os.path.splitext(filename)
+    print("开始添加新的speaker ID (基于子文件夹名称)...")
+    for dirname in sorted(dir_names): # 使用找到的子文件夹名
+        key_name = dirname # 子文件夹名直接作为 key
 
         if key_name not in existing_speakers:
             spk2id_dict[key_name] = next_id
@@ -122,12 +120,12 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-r", "--read-folder",
-        default="wavs/", # 设置默认相对路径
-        help="包含要读取文件名的源文件夹路径 (必需)。"
+        default=config.resample_config.out_dir,
+        help="包含要读取文件名的源文件夹路径。"
     )
     parser.add_argument(
         "-c", "--config",
-        default="config/config.json", # 设置默认相对路径
+        default=config.bert_gen_config.config_path, # 设置默认相对路径
         help="目标JSON配置文件的路径 (默认为: config/config.json)。"
     )
 
